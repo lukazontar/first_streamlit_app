@@ -55,5 +55,8 @@ try:
     streamlit.dataframe(fruityvice_normalized)
 except URLError as e:
   streamlit.error()
+  
+if streamlit.button('Add fruit to Snowflake'):
+  my_cur.execute(f"insert into PC_RIVERY_DB.PUBLIC.FRUIT_LOAD_LIST values ('{fruit_choice}')")
 
 
