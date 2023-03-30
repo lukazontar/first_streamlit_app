@@ -2,8 +2,8 @@ import streamlit
 import pandas 
 import requests
 import snowflake.connector
+from urllib.error import URLError
 
-streamlit.stop()
 streamlit.title('My Parents New Healthy Diner')
 streamlit.header('Breakfast Menu')
 streamlit.text('🥣 Omega 3 & Blueberry Oatmeal')
@@ -35,13 +35,25 @@ streamlit.write('The user entered ', fruit_choice)
 
 my_cnx = snowflake.connector.connect(**streamlit.secrets["snowflake"])
 my_cur = my_cnx.cursor()
-my_cur.execute("SELECT CURRENT_USER(), CURRENT_ACCOUNT(), CURRENT_REGION()")
-my_data_row = my_cur.fetchone()
-streamlit.text("Hello from Snowflake:")
-streamlit.text(my_data_row)
+# my_cur.execute("SELECT CURRENT_USER(), CURRENT_ACCOUNT(), CURRENT_REGION()")
+# my_data_row = my_cur.fetchone()
+# streamlit.text("Hello from Snowflake:")
+# streamlit.text(my_data_row)
 
-my_cur.execute("insert into PC_RIVERY_DB.PUBLIC.FRUIT_LOAD_LIST values ('from streamlit')")
-my_cur.execute("SELECT * from PC_RIVERY_DB.PUBLIC.FRUIT_LOAD_LIST")
-my_data = my_cur.fetchall()
+# my_cur.execute("insert into PC_RIVERY_DB.PUBLIC.FRUIT_LOAD_LIST values ('from streamlit')")
+# my_cur.execute("SELECT * from PC_RIVERY_DB.PUBLIC.FRUIT_LOAD_LIST")
+# fruityvice_normalized = my_cur.fetchall()
+# streamlit.dataframe(fruityvice_normalized)
 
-streamlit.dataframe(fruityvice_normalized)
+try:
+  fruit_choice = streamlit.text_input('What fruit would you like to know more about?', 'kiwi')
+  if not fruit_choice:
+    streamlit.error('Please select fruit')
+  else:
+    fruityvice_response = requests.get('https://fruityvice.com/api/fruit/' + fruit_choice)
+    fruityvice_normalized = pandas.json_normalize(fruityvice_response.json())
+    streamlit.dataframe(fruityvice_normalized)
+except URLError as e:
+  streamlit.error()
+
+
